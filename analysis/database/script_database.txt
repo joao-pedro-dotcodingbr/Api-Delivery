@@ -1,0 +1,168 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+create table users(
+	
+   id_user UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+   name VARCHAR(100) NOT NULL,
+   email VARCHAR(60) NOT NULL UNIQUE,
+   password VARCHAR(60) NOT NULL,
+   phone VARCHAR(15) NULL,
+   address_user UUID NULL,
+   FOREIGN KEY (address_user) REFERENCES address_users(id_address),
+   tokens JSON NULL,
+   CPF NUMERIC(12) NOT NULL UNIQUE,
+   is_blocked boolean DEFAULT false NULL,
+   registration_date DATE NOT NULL
+
+)
+
+create table payments_users(
+	
+   id_payment UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+   name VARCHAR(100) NULL,
+   details JSON NOT NULL,
+   users_id_user UUID NULL,
+   FOREIGN KEY (users_id_user) REFERENCES users(id_user)
+
+)
+
+/* Address Tables */
+
+create table address_users(
+	
+	id_address UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+	city VARCHAR(100) NOT NULL,
+	district VARCHAR(100)NOT NULL,
+	Street VARCHAR(100) NOT NULL,
+	CEP DECIMAL(8) NULL,
+	details VARCHAR(100) NOT NULL
+	
+)
+
+create table address_stores(
+	
+	id_address UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+	city VARCHAR(100) NOT NULL,
+	district VARCHAR(100)NOT NULL,
+	Street VARCHAR(100) NOT NULL,
+	CEP DECIMAL(8) NULL,
+	details VARCHAR(100) NOT NULL,
+	stores_id_store UUID NOT NULL,
+  FOREIGN KEY(stores_id_store) REFERENCES stores(id_store)
+	
+)
+
+/*                    */
+
+create table orders (
+	
+  id_order UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+  delivery_date DATE NULL,
+  order_date DATE NOT NULL,
+  details_order JSON NULL,
+  value DECIMAL(8,2) NOT NULL,
+  amount INT NOT NULL,
+  form_of_payment VARCHAR(60) NOT NULL,
+  products_id_product UUID NOT NULL,
+  users_id_user UUID NOT NULL,
+  id_payments_user UUID NULL,
+  FOREIGN KEY (products_id_product) REFERENCES products (id_product),
+  FOREIGN KEY (users_id_user) REFERENCES users (id_user),
+  FOREIGN KEY (id_payments_user) REFERENCES payments_users (id_payment)
+  
+)
+
+create table products (
+	
+   id_product UUID DEFAULT uuid_generate_v4 () NOT NULL,
+   name VARCHAR(100) NOT NULL,
+   value DECIMAL(4,2) NOT NULL,
+   amount INT NOT NULL,
+   expiration_date DATE NOT NULL,
+   img_urls JSON NOT NULL,
+   coupons JSON NULL,
+   details VARCHAR(100) NOT NULL,
+   status VARCHAR(100) NULL,
+   assessments JSON NULL,
+   stores_id_store UUID NOT NULL,
+   FOREIGN KEY(stores_id_store) REFERENCES stores(id_store),
+  PRIMARY KEY (id_product)
+	
+)
+
+
+create table ingredients(
+
+   id_ingredient UUID DEFAULT uuid_generate_v4 () NOT NULL,
+   name VARCHAR(100) NOT NULL,
+   status VARCHAR (100) NULL,
+   value DECIMAL(3,2) NOT NULL,
+   amount INT NOT NULL,
+   expiration_date DATE NULL,
+   products_id_product UUID NOT NULL,
+   extra bool DEFAULT false,
+  FOREIGN KEY (products_id_product) REFERENCES products (id_product),
+  PRIMARY KEY (id_ingredient)
+
+)
+
+create table stores (
+
+  id_store UUID DEFAULT uuid_generate_v4 () NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(60) NOT NULL UNIQUE,
+  password varchar(60) NOT NULL UNIQUE,
+  CNPJ VARCHAR(60) NOT NULL,
+  service_addresses JSON NOT NULL,
+  phone VARCHAR(15),
+  img_url JSON NULL,
+  details JSON NULL,
+  status VARCHAR(60) DEFAULT 'FECHADO',
+  categories JSON NULL,
+  tokens JSON,
+  is_blocked boolean DEFAULT false NULL,
+  registration_date DATE NOT NULL,
+  PRIMARY KEY (id_store)
+)
+
+create table payments_stores(
+	
+   id_payment UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+   name VARCHAR(100) NULL,
+   details JSON NOT NULL,
+   stores_id_store UUID NULL,
+   FOREIGN KEY (stores_id_store) REFERENCES stores(id_store)
+
+)
+
+
+/* Plataforma */
+
+create table denunciations_users (
+	
+   id_complaint UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+   users_id_user UUID NOT NULL,
+   stores_id_store UUID NOT NULL,
+   type VARCHAR(60) NOT NULL,
+   details VARCHAR(200) NOT NULL,
+   status VARCHAR(100) NULL,
+   date DATE NOT NULL,
+   FOREIGN KEY (users_id_user) REFERENCES users(id_user),
+   FOREIGN KEY (stores_id_store) REFERENCES stores(id_store)
+
+)
+
+create table denunciations_stores (
+	
+   id_complaint UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+   users_id_user UUID NOT NULL,
+   stores_id_store UUID NOT NULL,
+   type VARCHAR(60) NOT NULL,
+   details VARCHAR(200) NOT NULL,
+   status VARCHAR(100) NULL,
+   date DATE NOT NULL,
+   FOREIGN KEY (users_id_user) REFERENCES users(id_user),
+   FOREIGN KEY (stores_id_store) REFERENCES stores(id_store)
+
+)
+/*                 */

@@ -44,3 +44,56 @@ exports.NewsREgister = async (req, res) =>{
     }
 }
 
+exports.SignIn = async (req , res) => {
+
+        const {email , password} = req.body;
+    
+        try {
+    
+            const {rows} = await db.query('SELECT * FROM users WHERE email=$1' , [email])
+    
+            if(!rows[0]){
+    
+               return res.status(401).send({error:'Email não registrado'})
+    
+            }
+    
+            if(! await bcryptjs.compare(password , rows[0].password)){
+    
+               return res.status(401).send({error:'Senha incorreta'})
+    
+            }
+    
+            //#region TOKEN
+    
+            // selecionando o id do usuário no banco para adicionar no parametro do token
+    
+            let token =  await getToken(rows[0].id_user , rows[0].name , email) 
+            // Init JSON(tokens)
+            let tokens = rows[0].tokens;
+    
+            //!(negando) Verificando se o JSON tem a estutura inicial
+            if(!tokens.tokens){
+            // Init JSON(tokens)
+                tokens = { tokens:[{ token:token}]}
+    
+            }
+            else{
+                
+                let json = {token:token}
+                tokens.tokens.push(json)
+    
+            }
+    
+            // Adicionando o token nos dados do usuário
+            await db.query(`UPDATE users SET tokens=$1 WHERE id_user=$2` , [tokens , rows[0].id_user])
+    
+            //#endregion
+    
+            res.send({message:'Login efetuado com sucesso' , token})
+            
+        } catch (error) {
+            
+        }
+    
+    }

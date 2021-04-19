@@ -1,7 +1,6 @@
-
 const db = require('../../configs/database')
 const {HashPassword , getToken} = require('../index');
-
+const bcryptjs = require('bcryptjs')
 exports.NewsREgister = async (req, res) =>{
 
     const {name, email,password,CPF}  = req.body
@@ -44,3 +43,4 @@ exports.NewsREgister = async (req, res) =>{
         
     }
 }
+

@@ -19,13 +19,10 @@ exports.NewsREgister = async (req, res) =>{
 
         let Hash = await HashPassword(password)
 
-        await db.query(`INSERT INTO users(name , email , password , CPF , registration_date)
-        values( $1 , $2 , $3 , $4 , $5)`,[name,email,Hash,CPF,today])
+        let {rows} =  await db.query(`INSERT INTO users(name , email , password , CPF , registration_date)
+        values( $1 , $2 , $3 , $4 , $5) RETURNING *`,[name,email,Hash,CPF,today])
 
         //#region TOKEN
-
-        // selecionando o id do usuário no banco para adicionar no parametro do token
-        let {rows} = await db.query('SELECT id_user FROM users WHERE email=$1' , [email])
 
         let token =  await getToken(rows[0].id_user , name , email) 
         // Init JSON(tokens)

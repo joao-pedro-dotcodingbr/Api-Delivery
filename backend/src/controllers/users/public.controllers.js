@@ -68,7 +68,7 @@ exports.SignIn = async (req , res) => {
     
             // selecionando o id do usuário no banco para adicionar no parametro do token
     
-            let token =  await getToken(rows[0].id_user , rows[0].name , email) 
+            let token =  await getToken(rows[0].id_user ,  rows[0].name , email) 
             // Init JSON(tokens)
             let tokens = rows[0].tokens;
     

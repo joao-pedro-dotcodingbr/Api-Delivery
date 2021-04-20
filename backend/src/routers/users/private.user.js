@@ -4,8 +4,11 @@ const router = express.Router()
 const  auth = require('../../middleware/auth.users')
 
 router.use(auth)
-// SignIn requestion = http://localhost:3000/register/user/addAddress
-router.post('/addAddress' , controllers.ToAddAddress)
+// Add news address requestion = http://localhost:3000/register/user/addAddress
+router.post('/addAddress' , controllers.ToAddAddressUser)
+
+// Update requestion = http://localhost:3000/register/user/update_addAddress/:id
+router.put('/update_addAddress' , controllers.UpdateAddressUser)
 
 
 module.exports = app => app.use('/register/user' , router)

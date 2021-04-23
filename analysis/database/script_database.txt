@@ -21,7 +21,7 @@ create table payments_users(
    id_payment UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
    name VARCHAR(100) NULL,
    details JSON NOT NULL,
-   users_id_user UUID NULL,
+   users_id_user UUID NOT NULL,
    FOREIGN KEY (users_id_user) REFERENCES users(id_user)
 
 )
@@ -35,7 +35,7 @@ create table address_users(
 	district VARCHAR(100)NOT NULL,
 	Street VARCHAR(100) NOT NULL,
 	CEP DECIMAL(8) NULL,
-	details VARCHAR(100) NOT NULL
+	details VARCHAR(100) NULL
 	
 )
 
@@ -46,7 +46,7 @@ create table address_stores(
 	district VARCHAR(100)NOT NULL,
 	Street VARCHAR(100) NOT NULL,
 	CEP DECIMAL(8) NULL,
-	details VARCHAR(100) NOT NULL,
+	details VARCHAR(100) NULL,
 	stores_id_store UUID NOT NULL,
   FOREIGN KEY(stores_id_store) REFERENCES stores(id_store)
 	

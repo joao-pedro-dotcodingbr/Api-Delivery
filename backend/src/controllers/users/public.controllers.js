@@ -1,6 +1,7 @@
 const db = require('../../configs/database')
 const {HashPassword , getToken} = require('../index');
 const bcryptjs = require('bcryptjs')
+
 exports.NewsREgister = async (req, res) =>{
 
     const {name, email,password,CPF}  = req.body
@@ -37,7 +38,7 @@ exports.NewsREgister = async (req, res) =>{
     } catch (error) {
 
         res.status(401).send({error:error})
-        
+        console.log(error)       
     }
 }
 
@@ -47,8 +48,8 @@ exports.SignIn = async (req , res) => {
     
         try {
     
-            const {rows} = await db.query('SELECT * FROM users WHERE email=$1' , [email])
-    
+           const {rows} = await db.query('SELECT * FROM users WHERE email=$1',[email])
+
             if(!rows[0]){
     
                return res.status(401).send({error:'Email não registrado'})
@@ -83,14 +84,17 @@ exports.SignIn = async (req , res) => {
             }
     
             // Adicionando o token nos dados do usuário
-            await db.query(`UPDATE users SET tokens=$1 WHERE id_user=$2` , [tokens , rows[0].id_user])
+            await db.query(`UPDATE users SET tokens=$1 WHERE id_user=$2` , [tokens , rows[0].id_user])
     
             //#endregion
     
             res.send({message:'Login efetuado com sucesso' , token})
             
         } catch (error) {
+
+        res.status(401).send({error:error})
+        console.log(error)
             
         }
     
-    }
+}

@@ -2,7 +2,7 @@ const db = require('../../configs/database')
 
 exports.ToAddAddressUser = async (req , res) =>{
 
-    const {id_user, city , district , street , CEP , details} = req.body;
+    const { city , district , street , CEP , details} = req.body;
 
     try {
 
@@ -54,16 +54,34 @@ exports.ToAddAddressUser = async (req , res) =>{
 
 exports.UpdateAddressUser = async (req ,res) =>{
 
-
     const {city , district , street , CEP , details} = req.body;
     const id_address = req.params.id;
 
     try {
 
-    // armazenando os parâmetros para o cadastro
-      const configQuery = {queryText:'cit=$1 , district=$2 , street=$3' , params:[city , district , street]}
+    // armazenando os parâmetros para o Update
 
-     //#region  verificando se o cep ou o details foi adicionado pelo usuário
+      const configQuery = {queryText:'' , params:[]}
+
+       //#region verificando os campos que seram atualizados
+       if(city){
+
+        configQuery.queryText += 'city=$1'
+        configQuery.params.push(city)
+
+       }
+       if(district){
+
+        configQuery.queryText += ', district=$2'
+        configQuery.params.push(district)
+
+       }
+       if(street){
+
+        configQuery.queryText += ', street=$3'
+        configQuery.params.push(street)
+
+       }
         if(CEP){
 
             configQuery.queryText += ', CEP=$4'
@@ -86,20 +104,117 @@ exports.UpdateAddressUser = async (req ,res) =>{
             }
 
         }
+        //caso não tenha dados adicionados
+        if(configQuery.queryText == ''){
+            return res.status(401).send({error:'adicione o campo com valor para ser atualizado'})
+        }
         //#endregion
 
-     const numParams = configQuery.params.length;
+      const numericparams = configQuery.params.length +1;
+      configQuery.params.push(id_address)
 
-      const {rows} = await db.query(`UPDATE address_users SET ${configQuery.queryText} WHERE id_address=${id_address} RETURNING *`,
+      const {rows} = await db.query(`UPDATE address_users 
+                                        SET ${configQuery.queryText} 
+                                        WHERE id_address=$${numericparams} RETURNING *
+                                        `,
         configQuery.params)
 
-        res.send({message:'endereço adicionado com sucesso' , date:rows[0]})
+        res.send({message:'endereço atualizado com sucesso' , date:rows[0]})
         
     } catch (error) {
 
-        return res.status(401).send({error:error})
+        res.status(401).send({error:error})
+        console.log(error)
         
     }
 
 
+}
+
+exports.ToAddPayments = async (req , res) =>{
+
+    const {details,name} = req.body;
+    const id_user = req.id_user
+
+    try {
+
+      // armazenando os parâmetros para o cadastro
+      const configQuery = {queryText:'users_id_user , details' , valuesquery:'$1 , $2' , params:[id_user , details]}
+
+      if(name){
+
+          configQuery.queryText += ', name';
+          configQuery.valuesquery += ', $3';
+          configQuery.params.push(name)
+      }
+ 
+        const {rows} = await db.query(`INSERT INTO payments_users 
+                                            (${configQuery.queryText}) 
+                                          VALUES 
+                                            (${configQuery.valuesquery}) 
+                                          RETURNING *` , configQuery.params)
+
+        res.send({message:'Novo tipo de pagamento adicionado', date:rows[0]})
+        
+    } catch (error) {
+
+        res.status(401).send({error});
+        
+    }
+
+}
+
+exports.UpdatePaymentsUser = async (req , res) =>{
+
+    const {details,name} = req.body;
+    const id_payments = req.params.id;
+    const id_user = req.id_user;
+
+    try {
+
+     // armazenando os parâmetros para o Update
+      let configQuery = {queryText:'' , params:[]}
+
+      //#region validações
+
+     //verificando se á valores
+      if(details){
+
+        configQuery.queryText += 'details=$1';
+        configQuery.params.push(details)
+      }
+      if(name){
+
+          configQuery.queryText += ', name=$2';
+          configQuery.params.push(name)
+          console.log('passou')
+      }
+      
+      if(configQuery.queryText == ''){
+          return res.status(401).send({error:'adicione o campo com valor para ser atualizado'})
+      }
+      //
+
+      // verificando se o id do usuário(do token) é o usuário correto
+      let permission = await db.query('SELECT users_id_user FROM payments_users WHERE id_payment=$1', [id_payments])
+
+      if(!permission.rows[0].users_id_user == id_user){
+        return res.status(401).send({error:'Só o usuário poderá alterar os dados de pagamento\n se você é o usuário envie uma mensagem para a central de problemas'})
+      }
+      //
+
+    //#endregion
+
+      let numericparams = configQuery.params.length +1;
+      configQuery.params.push(id_payments)
+      //RETURNING *
+      let {rows} = await db.query(`UPDATE payments_users SET ${configQuery.queryText} WHERE id_payment=$${numericparams} RETURNING *`, configQuery.params)
+      res.send({message:'forma de pagamento atualizada' , date:rows[0]})
+        
+    } catch (error) {
+
+        res.status(401).send({error})
+        console.log(error)
+        
+    }
 }
